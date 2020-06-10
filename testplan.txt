@@ -1,0 +1,42 @@
+testplan.txt
+
+Welcome to testplan.txt. I will explain how my WTFtest.c is implemented and works.
+
+I create directories server, user1, and user2 to simulate users and a server. I copy the executables WTF into users and WTFserver into the server. 
+
+As you can see in WTFtest.c, I also comment out my input and actions for each system call that tests a function. I also echo in STDOUT what should happen to help explain the outcome.
+
+I run WTFserver in the server folder as a background process. As user1, I create project1 and project2, which both work as intended, creating project folders in the server and returning a success message. 
+
+Then I call destroy project2, deleting the project2 server on the server side. I try to add project1 again, which sends back a fail message.
+
+Then as user1, I create file1.txt in project1 and call the add function, which succeeds. I create a folder in project1 called folder1 and have a file2.txt created in it. I add this as well.
+
+I then try to add file3.txt, which doesn't exist so it returns an error message.
+
+I call commit, which tells us we have A file1.txt and A folder1/file2.txt, which is correct.
+
+I push this commit. On the server side it creates the newest version folder /1/ and makes the necessary changes from commit.
+
+Now I go into user2 and call checkout, getting the most recent version which contains file1.txt and file2.txt.
+
+I go into user1 and remove file1.txt and modify file2.txt in folder1.
+
+I call commit, which correctly tells us R file1.txt and M folder1/file2.txt.
+
+I push the changes, and now the project is in its second version.
+
+I call history which returns a list of all actions from successful pushes
+
+I call current version which returns a list of files and their versions
+
+As user2, I call update, which tells us to delete file1.txt and modify folder1/file2.txt.
+
+I call upgrade and get the necessary changes.
+
+I call rollback to version 1, which removes version 2 on the server side. Now the current version is  in /1/.
+
+
+Note: I do not delete any of the folders that are made by WTFtest. This is so you can see the contents of each folder and see that everything is correct.
+
+Thank you for your time and patience this semester. I am very grateful for your cooperation and understanding during this chaotic time.

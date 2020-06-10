@@ -1,0 +1,168 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <arpa/inet.h>
+#include <sys/types.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
+#include <sys/stat.h>
+#include <dirent.h>
+#include<fcntl.h>
+
+
+#define MAXRCVLEN 500
+#define PORTNUM 2343
+
+char * readfile(int fd){        //reads file and returns a string of entire file
+    char * buf = malloc(300*sizeof(char));
+    memset(buf,'\0',300);
+    int bsize = 300;
+    int index = 0;
+    int status= 0;
+    do{
+        status = read(fd, buf + index, 20);
+	printf("%d\n",status);
+        index += status;
+        if(index>=bsize-20)
+        {
+            char * temp =(char *) malloc(bsize*sizeof(char));
+            memcpy(temp, buf, bsize);
+            free(buf);
+            buf = (char *)malloc(bsize*2*sizeof(char));
+            memset(buf,'\0',bsize*2);
+            memcpy(buf,temp,bsize);
+            free(temp);
+            bsize=bsize*2;
+        }
+    }while(status>0);
+
+    return buf;
+}
+
+char * readsocket(int fd){
+    int n;
+    int len = MAXRCVLEN + 1;
+    
+    char * buffer = (char *)malloc(len * sizeof(char));
+    char * recvline = (char *)malloc(len * sizeof(char));
+    
+    memset(buffer, '\0', len);
+    memset(recvline, '\0', len);
+    
+    while ((n=read(fd, recvline, MAXRCVLEN)) > 0){ // n = read(fd, recvline, MAXRCVLEN)
+        if ((n+strlen(buffer)) >= len){
+            char * temp = (char *)malloc(len * sizeof(char));
+            memcpy(temp, buffer, len);
+            free(buffer);
+            len = (len * 2) - 1;
+            buffer = (char *)malloc(len * sizeof(char));
+            memset(buffer, '\0', len);
+            strcat(buffer, temp);
+            free(temp);
+        }
+        strcat(buffer, recvline);
+        memset(recvline, '\0', MAXRCVLEN+1);
+    }
+
+    free(recvline);
+    return buffer;
+}
+
+char * requestfiles(int mysocket, char * files){
+  //send(mysocket,"request:",8,0);
+  //printf("%s\n",files);
+    send(mysocket,files,strlen(files),0);
+    printf("%d\n",mysocket);
+    char * filecontents = readsocket(mysocket);
+    //printf("%s\n",filecontents); 
+    return filecontents;
+}
+
+void sendfiles(int mysocket, char * files){
+    int i = 0;
+    int start = 0;
+    int len = 300;
+    //printf("%s\n",files);
+    char * result = (char *) malloc(sizeof(char)*300);
+    memset(result, '\0', len);
+    do{
+        if(files[i]=='\n' || files[i]=='\0'){
+            int length = i-start;
+            if(length>0){
+                char * file = (char * )malloc((length+1)*sizeof(char));
+                int p = 0;
+                for(p = 0; p<length;p++){
+                    file[p]=files[start+p];
+                }
+                file[length]='\0';
+		        int fd = open(file,O_RDONLY);
+		        char * filecontents = readsocket(fd);
+                if ((strlen(result)+strlen(filecontents)) > len-1){
+                    char * temp = (char *)malloc(len*sizeof(char));
+                    memcpy(temp, result, len);
+                    free(result);
+                    result = (char *)malloc(len*2*sizeof(char));
+                    memset(result,'\0',len*2);
+                    memcpy(result,temp,len);
+                    free(temp);
+                    len = len * 2;
+                }
+		        strcat(result,filecontents);
+                free(filecontents);
+                free(file);
+            }
+            start=i+1;
+        }
+        i++;
+    } while(files[i-1]!='\0');
+    send(mysocket,result,strlen(result),0);
+    free(result);
+}
+
+int main(int argc, char *argv[])
+{
+    int portnum, mysocket;
+    struct sockaddr_in dest;
+
+    if (argc != 4){
+        printf("Error: Insufficient number of arguments\n");
+        exit(0);
+    }
+
+    if (atoi(argv[1]) <= 1023 && strcmp(argv[1], "0") != 0){
+        printf("Error: Invalid port number\n");
+        exit(0);
+    }
+    
+    portnum = atoi(argv[1]);
+    mysocket = socket(AF_INET, SOCK_STREAM, 0);
+    memset(&dest, 0, sizeof(dest)); /* zero the struct */
+    dest.sin_family = AF_INET;
+    dest.sin_addr.s_addr = htonl(INADDR_ANY); /* set destination IP number*/
+    dest.sin_port = htons(portnum); /* set destination port number*/
+
+    connect(mysocket, (struct sockaddr *)&dest, sizeof(struct sockaddr));
+    
+    int fd = open(argv[2], O_RDONLY);
+    char * files = readsocket(fd);
+    if(strcmp(argv[3],"request")==0){
+        //int fd = open(argv[2],O_RDONLY);
+        //char * files = readfile(fd);
+        char * result = requestfiles(mysocket,files);
+        printf("%s\n", result);
+        //free(result);
+        //free(files);
+    }
+    else if(strcmp(argv[3],"send")==0){
+        //int fd = open(argv[2],O_RDONLY);
+        //char * files = readfile(fd);
+        send(mysocket,files,strlen(files),0);
+        sendfiles(mysocket,files);
+        //free(files);  
+    }
+    free(files);
+    
+    close(mysocket);
+    return 0;
+}

@@ -1,0 +1,224 @@
+testcases.txt
+
+I will document the test cases for each command on the project
+
+------
+Add:
+
+input- add a file that is present in a project   
+output- successfully adds file to local manifest, returns success
+
+input- add a file in a subfolder that is present in a project
+output- successfully adds file to local manifest, returns success
+
+input- add file that is not present in project
+output- returns error message, file is not found in project
+
+input- add file that is already in manifest
+output- returns error message, file already in manifest
+
+intput- insufficient number of arguments
+output- returns error, incorrect/missing arguments
+
+----------
+Remove:
+
+input- remove a file that is in the manifest
+output- successfully removes file in local manifest, returns success
+
+input- remove file that is not in the manifest
+output- returns error message, file not found in manifest
+
+input- remove a file present in a subfolder of the project
+output- successfully removes file in local manifest, returns success
+
+input- insufficient number of arguments
+output- returns error message, incorrect/missing arguments
+
+-----------
+
+checkout
+
+input- checkout a project that does not exist on client side and exists on server side
+output- creates copy of most recent project on client side, prints success message
+
+input- checkout a project that already exists on the client side
+output- prints error stating project already exists on client side
+
+input- checkout a project that does not exist on the server side
+output- prints error stating that project does not exist on server
+
+input- insufficient number of arguments
+output- returns error message, incorrect/missing arguments
+
+input- cannot connect to server or incorrect port number given
+output- prints error that there is no connection to server
+
+input- insufficient number of arguments
+output- returns error message, incorrect/missing arguments
+
+----------
+
+configure
+
+input- IP address and correct port number
+output- create .configure file and is able to connect to server
+
+input- IP address and incorrect port number
+output- create .configure file but connections to server will fail
+
+input- no IP address or no port number
+output- prints error, incorrect/missing arguments
+
+---------
+history
+
+input- request history of a project that exists on the server with one push
+output- returns history of project
+
+input- request history of project with no pushes
+output- returns error, no history yet
+
+input- request history of project that does not exist
+output- returns error, no project found
+
+input- request history of a project that exists on server with 2 or more pushes
+output- returns history of project
+
+input- insufficient number of arguments
+output- returns error message, incorrect/missing arguments
+
+--------
+rollback
+
+input- requests rollback to a prior version of a project that exists on server
+output- rolls back to version requested, returns success
+
+input- requests rollback to current version or higher version
+output- returns error, version is not smallest than current version
+
+input- requests rollback to project that does not exist on server
+output- returns error, no project found
+
+input- insufficient number of arguments
+output- returns error message, incorrect/missing arguments
+
+------
+destroy
+
+input- requests destroy on project that exists on server
+output- destroy project and contents, returns success
+
+input- requests destroy on project that does not exist on server
+output- return error, no project found
+
+input- insufficient number of arguments
+output- returns error message, incorrect/missing arguments
+
+-----
+current version
+
+input- requests current version on project that exists
+output- returns current version on project, returns success
+
+input- requests current version on a project exists and is version 0
+output- returns current version, although no files are in it, returns success
+
+input- request current version on project that does not exist
+output- returns error message, project does not exist
+
+------
+commit
+
+input- commit on a local Manifest with no changes
+output- return message, no changes
+
+input- commit on project that does not exist on client side
+output- return error, project does not exist
+
+input- commit on project that does not exist on server side
+output- return error, project does not exist
+
+input- commit on project with .Update
+output- return error, projects need to be updated first
+
+input- commit on project with .Conflict
+output- return error, still needs to resolve conflicts
+
+input- commit on project with only modifications
+output- creates commit file with proper files with M
+
+input- commit on project with only adds
+output- creates commit file with proper files with A
+
+input- commit on project with only removes
+output- creates commit file with proper files with R
+
+input- commit on project with adds and removes and modifications
+output- creates commit file with proper files with proper labels
+
+-----
+push
+
+input- project does not exist on client 
+output- returns error message, project does not exist on client
+
+input- project does not exist on server side
+output- returns error message, project does not exist on server
+
+input- .Commit does not exist on client side
+output- returns error, .Commit not found
+
+input- .Commit does not exist on server side, (someone else's commit got pushed)
+output- returns error, .Commit not found on server
+
+input- .Commit exists on client and server and project exists
+output- correctly makes changes on server side, updates Manifest on server and client
+
+input- insufficient number of arguments
+output- returns error message, incorrect/missing arguments
+
+-----
+update
+
+input- project does not exist on client
+output- print error, project not found on client
+
+input- project does not exist on server
+output- print error, project not found on server
+
+input- same Manifest, no changes
+output- prints Up To Date, success
+
+input- no changes in live hash for client, but different Manifests for files
+output- creates .Update file with necessary labels for files that need updates
+
+input- changes in live hash for client and different file hashes between Manifests
+output- creates .Conflict file
+
+input- insufficient number of arguments
+output- returns error message, incorrect/missing arguments
+
+-------
+upgrade
+
+input- project does not exist on client
+output- project does not exist on client
+
+input- project does not exist on server
+output- print error, project not found on server
+
+input- no .Update file found
+output- print error, no .Update file
+
+input- blank .Update file
+output- print no need to upgrade
+
+input- .Conflict exists
+output- print error, resolve conflicts first
+
+input- no .Conflict, only non-blank .Update file
+output- make necessary changes by downloading files from server, update client Manifest, print success
+
+input- insufficient number of arguments
+output- returns error message, incorrect/missing arguments
