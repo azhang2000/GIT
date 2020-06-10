@@ -822,7 +822,7 @@ int main(int argc, char *argv[])
     memset(&serv, 0, sizeof(serv));                                                     // zero the struct before filling the fields 
     serv.sin_family = AF_INET;                                                          // set the type of connection to TCP/IP 
     serv.sin_addr.s_addr = htonl(INADDR_ANY);                                           // set our address to any interface 
-    serv.sin_port = htons(PORTNUM);                                                     // set the server port number 
+    serv.sin_port = htons(portnum);                                                     // set the server port number 
     mysocket = socket(AF_INET, SOCK_STREAM, 0);
     check(mysocket);
     check(bind(mysocket, (struct sockaddr *)&serv, sizeof(struct sockaddr)));                  // bind serv information to mysocket 
